@@ -1,24 +1,23 @@
 import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import { ProvideRealm } from './context';
+import { RealmAppManager } from './realm-app-manager';
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div style={{ background: '' }}>
+      <ProvideRealm>
+        <Router>
+          <Switch>
+            <Route path="/realm">
+              <RealmAppManager />
+            </Route>
+            <Route path="*">
+              <h1>Hey hey</h1>
+            </Route>
+          </Switch>
+        </Router>
+      </ProvideRealm>
     </div>
   );
 }
