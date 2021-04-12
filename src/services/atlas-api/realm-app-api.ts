@@ -34,6 +34,19 @@ export class RealmAppApi {
     return data;
   }
 
+  public async getService(serviceId: string): Promise<RealmAppServiceDetails> {
+    const response = await fetch(
+      `${RealmApi.API_BASE_URL}/groups/${this.details.group_id}/apps/${this.details._id}/services/${serviceId}`,
+      {
+        headers: this.realmApi.getAuthHeaders()
+      }
+    );
+    await assertResponseOk(response);
+
+    const data: RealmAppServiceDetails = await response.json();
+    return data;
+  }
+
   public getServiceApi(serviceDetails: RealmAppServiceDetails): RealmAppServiceApi {
     return new RealmAppServiceApi(this, serviceDetails);
   }

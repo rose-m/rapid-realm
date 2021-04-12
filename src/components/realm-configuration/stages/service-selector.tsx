@@ -1,10 +1,10 @@
 import Banner from '@leafygreen-ui/banner';
 import Button from '@leafygreen-ui/button';
 import { RadioBox, RadioBoxGroup } from '@leafygreen-ui/radio-box-group';
-import { Body, Label } from '@leafygreen-ui/typography';
+import { Label } from '@leafygreen-ui/typography';
 import { useEffect, useState } from 'react';
 import { RealmAppApi, RealmAppServiceDetails } from '../../../services/atlas-api';
-import { ButtonBar, Spacer } from '../../../typography';
+import { ButtonBar, Loader, Spacer } from '../../../typography';
 import { useAsync } from '../../../utils';
 
 
@@ -85,9 +85,7 @@ export const RealmServiceSelector: React.FC<RealmServiceSelectorProps> = ({
   if (getRealmServices.status !== 'success') {
     return (
       <>
-        <Body>
-          Loading Services...
-        </Body>
+        <Loader loading={true} />
         {renderButtonBar()}
       </>
     );

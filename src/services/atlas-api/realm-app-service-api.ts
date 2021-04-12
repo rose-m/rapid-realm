@@ -1,5 +1,7 @@
+import { RealmApi } from './realm-api';
 import { RealmAppApi } from './realm-app-api';
-import { RealmAppServiceDetails } from './realm-app-service-api.types';
+import { RealmAppServiceDetails, RealmAppServiceWebhookDetails } from './realm-app-service-api.types';
+import { assertResponseOk } from './utils';
 
 export class RealmAppServiceApi {
 
@@ -16,6 +18,19 @@ export class RealmAppServiceApi {
     return {
       ...this.details
     };
+  }
+
+  public async getWebhooks(): Promise<RealmAppServiceWebhookDetails[]> {
+    const response = await fetch(
+      `${RealmApi.API_BASE_URL}/groups/${this.realmApp.getDetails().group_id}/apps/${this.realmApp.getDetails()._id}/services/${this.details._id}/incoming_webhooks`,
+      {
+        headers: this.realmApp.getRealm().getAuthHeaders()
+      }
+    );
+    await assertResponseOk(response);
+
+    const data: RealmAppServiceWebhookDetails[] = await response.json();
+    return data;
   }
 
 }

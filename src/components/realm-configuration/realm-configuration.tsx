@@ -47,7 +47,7 @@ export const RealmConfiguration: React.FC = () => {
       privateKey: atlasDetails!.privateKey,
       groupId: atlasDetails!.groupId,
       appId: realmAppId!,
-      serviceId: realmAppServiceId!
+      serviceId: serviceDetails._id
     }, realmApp!.getServiceApi(serviceDetails));
   };
 
@@ -90,7 +90,7 @@ export const RealmConfiguration: React.FC = () => {
 
   return (
     <div className="realm-configuration">
-      <Card className="realm-configuration__card">
+      <Card className="realm-configuration__card padding--md">
         <div className="realm-configuration__centered">
           <RealmLogoMark size={64} />
           <Spacer size="s" />
