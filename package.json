@@ -4,8 +4,13 @@
   "private": true,
   "dependencies": {
     "@babel/core": "7.12.3",
+    "@leafygreen-ui/button": "^11.0.1",
     "@leafygreen-ui/card": "^5.1.0",
+    "@leafygreen-ui/leafygreen-provider": "^2.0.2",
+    "@leafygreen-ui/logo": "^5.0.0",
     "@leafygreen-ui/palette": "^3.2.0",
+    "@leafygreen-ui/text-input": "^5.0.10",
+    "@leafygreen-ui/typography": "^7.5.0",
     "@pmmmwh/react-refresh-webpack-plugin": "0.4.3",
     "@svgr/webpack": "5.5.0",
     "@testing-library/jest-dom": "^5.11.10",
@@ -77,7 +82,7 @@
     "workbox-webpack-plugin": "5.1.4"
   },
   "scripts": {
-    "start": "node scripts/start.js",
+    "start": "concurrently -n \"CORS,REACT\" \"node node_modules/cors-anywhere/server.js\" \"node scripts/start.js\"",
     "build": "node scripts/build.js",
     "test": "node scripts/test.js"
   },
@@ -100,7 +105,11 @@
     ]
   },
   "devDependencies": {
-    "@types/react-router-dom": "^5.1.7"
+    "@types/react-router-dom": "^5.1.7",
+    "concurrently": "^6.0.1",
+    "cors-anywhere": "^0.4.4",
+    "less": "^4.1.1",
+    "less-loader": "^7.3.0"
   },
   "jest": {
     "roots": [

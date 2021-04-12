@@ -1,5 +1,5 @@
 import { Redirect } from 'react-router';
-import { useRealm } from '../context/realm'
+import { useRealm } from '../../context/realm'
 
 export const RealmAppManager: React.FC = () => {
     const realmData = useRealm();

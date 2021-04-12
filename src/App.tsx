@@ -1,7 +1,8 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 import { ProvideRealm } from './context';
-import { RealmAppManager } from './realm-app-manager';
+import { RealmAppManager } from './components/realm-app-manager';
+import { RealmConfiguration } from './components/realm-configuration';
 
 function App() {
   return (
@@ -13,7 +14,7 @@ function App() {
               <RealmAppManager />
             </Route>
             <Route path="*">
-              <h1>Hey hey</h1>
+              <RealmConfiguration />
             </Route>
           </Switch>
         </Router>
