@@ -2,9 +2,9 @@ import Card from '@leafygreen-ui/card';
 import { RealmLogoMark } from '@leafygreen-ui/logo';
 import { Body, H2 } from '@leafygreen-ui/typography';
 import React, { useEffect, useState } from 'react';
+import { RealmApi } from '../../services/atlas-api';
 import { Spacer } from '../../typography';
 import { useAsync } from '../../utils';
-import { RealmApi } from '../../services/atlas-api';
 import './realm-configuration.less';
 import { AtlasCredentials, AtlasCredentialsForm, RealmSettingsForm } from './stages';
 
@@ -20,7 +20,7 @@ export const RealmConfiguration: React.FC = () => {
     console.log(createRealmApi);
   }, [createRealmApi]);
 
-  const onSetCredentials = (credentials: AtlasCredentials) => {
+  const onSetCredentials = async (credentials: AtlasCredentials) => {
     setAtlasCredentials(credentials);
     createRealmApi.execute(credentials);
   };
@@ -30,6 +30,7 @@ export const RealmConfiguration: React.FC = () => {
       <AtlasCredentialsForm
         setCredentials={onSetCredentials}
         verifying={createRealmApi.status === 'pending'}
+        failed={createRealmApi.error}
       />
     )
     : (

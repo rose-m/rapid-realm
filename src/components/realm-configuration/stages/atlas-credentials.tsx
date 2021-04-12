@@ -1,5 +1,6 @@
-import TextInput from '@leafygreen-ui/text-input';
+import Banner from '@leafygreen-ui/banner';
 import Button from '@leafygreen-ui/button';
+import TextInput from '@leafygreen-ui/text-input';
 import React, { useState } from 'react';
 import { Spacer } from '../../../typography';
 
@@ -11,9 +12,12 @@ export interface AtlasCredentials {
 export interface AtlasCredentialsProps {
   setCredentials: (credentials: AtlasCredentials) => void;
   verifying: boolean;
+  failed: boolean;
 }
 
-export const AtlasCredentialsForm: React.FC<AtlasCredentialsProps> = ({ setCredentials, verifying }) => {
+export const AtlasCredentialsForm: React.FC<AtlasCredentialsProps> = ({
+  setCredentials, verifying, failed
+}) => {
   const [publicKey, setPublicKey] = useState('');
   const [privateKey, setPrivateKey] = useState('');
 
@@ -25,8 +29,16 @@ export const AtlasCredentialsForm: React.FC<AtlasCredentialsProps> = ({ setCrede
     }
   };
 
+  const error = failed ? (
+    <>
+      <Banner variant="danger">Could not verify Atlas API credentials. Check your API keys and try again.</Banner>
+      <Spacer size="l"></Spacer>
+    </>
+  ) : null;
+
   return (
     <>
+      {error}
       <TextInput
         label="Atlas Public API Key"
         onChange={e => setPublicKey(e.target.value)}
