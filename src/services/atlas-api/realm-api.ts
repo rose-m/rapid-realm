@@ -1,4 +1,7 @@
-import { RealmLoginResponse } from './realm-api-types';
+import { RealmLoginResponse } from './realm-api.types';
+import { RealmAppApi } from './realm-app-api';
+import { RealmAppDetails } from './realm-app-api.types';
+import { assertResponseOk } from './utils';
 
 const PUBLIC_REALM_API_BASE_URL = 'https://realm.mongodb.com/api/admin/v3.0' as const;
 
@@ -23,9 +26,7 @@ export class RealmApi {
 
       }
     );
-    if (!response.ok) {
-      throw new Error(`Request failed, status: ${response.status} - ${await response.text()}`);
-    }
+    await assertResponseOk(response);
 
     const data: RealmLoginResponse = await response.json();
     if (!data.access_token) {
@@ -33,5 +34,28 @@ export class RealmApi {
     }
 
     return new RealmApi(data.access_token);
+  }
+
+  public async getApps(groupId: string): Promise<RealmAppDetails[]> {
+    const response = await fetch(
+      `${RealmApi.API_BASE_URL}/groups/${groupId}/apps`,
+      {
+        headers: this.getAuthHeaders()
+      }
+    );
+    await assertResponseOk(response);
+
+    const data: RealmAppDetails[] = await response.json();
+    return data;
+  }
+
+  public getAppApi(groupId: string, appId: string): RealmAppApi {
+    return new RealmAppApi(this, groupId, appId);
+  }
+
+  public getAuthHeaders(): Record<string, string> {
+    return {
+      Authorization: `Bearer ${this.accessToken}`
+    };
   }
 }

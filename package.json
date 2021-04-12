@@ -10,6 +10,7 @@
     "@leafygreen-ui/leafygreen-provider": "^2.0.2",
     "@leafygreen-ui/logo": "^5.0.0",
     "@leafygreen-ui/palette": "^3.2.0",
+    "@leafygreen-ui/radio-box-group": "^5.0.2",
     "@leafygreen-ui/text-input": "^5.0.10",
     "@leafygreen-ui/typography": "^7.5.0",
     "@pmmmwh/react-refresh-webpack-plugin": "0.4.3",
