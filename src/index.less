@@ -13,3 +13,25 @@ body {
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
 }
+
+/********
+  OTHER GLOBAL STYLES
+  */
+.radio-box-group--vertical {
+  flex-direction: column;
+
+  > label {
+    margin-right: 0 !important;
+    margin-top: 0.5em;
+    &:first-child {
+      margin-top: 0;
+    }
+
+    > div {
+      width: 100% !important;
+      > div > div:first-child {
+        width: 100% !important;
+      }
+    }
+  }
+}

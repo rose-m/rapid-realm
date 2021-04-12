@@ -1,12 +1,22 @@
+import Button from '@leafygreen-ui/button';
 import { Redirect } from 'react-router';
-import { useRealm } from '../../context/realm'
+import { useRealm } from '../../context/realm';
 
 export const RealmAppManager: React.FC = () => {
-    const realmData = useRealm();
+  const realm = useRealm();
+  if (!realm.realmServiceData) {
+    return <Redirect to="/configure" />;
+  }
 
-    return realmData.realm ? (
-        <h1>Realm</h1>
-    ) : (
-        <Redirect to="/" />
-    );
+  return (
+    <>
+      <h1>Realm</h1>
+
+      <Button
+        onClick={() => realm.clear()}
+      >
+        Clear Realm Data
+      </Button>
+    </>
+  );
 }

@@ -49,8 +49,8 @@ export class RealmApi {
     return data;
   }
 
-  public getAppApi(groupId: string, appId: string): RealmAppApi {
-    return new RealmAppApi(this, groupId, appId);
+  public getAppApi(appDetails: RealmAppDetails): RealmAppApi {
+    return new RealmAppApi(this, appDetails);
   }
 
   public getAuthHeaders(): Record<string, string> {

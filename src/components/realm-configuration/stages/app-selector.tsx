@@ -7,19 +7,26 @@ import { RealmApi, RealmAppDetails } from '../../../services/atlas-api';
 import { ButtonBar, Spacer } from '../../../typography';
 import { useAsync } from '../../../utils';
 
-import './app-selector.less';
 
 export interface RealmAppSelectorProps {
   realmApi: RealmApi;
   groupId: string;
+  appId?: string | undefined;
 
   onBack: () => void;
+  onSelectApp: (appDetails: RealmAppDetails) => void;
 }
 
 export const RealmAppSelector: React.FC<RealmAppSelectorProps> = ({
-  realmApi, groupId, onBack
+  realmApi, groupId, appId, onBack, onSelectApp
 }) => {
   const [realmAppId, setRealmAppId] = useState('');
+  useEffect(() => {
+    if (appId) {
+      setRealmAppId(appId);
+    }
+  }, [appId]);
+
   const getRealmApps = useAsync(async () => {
     return await realmApi.getApps(groupId);
   });
@@ -28,6 +35,13 @@ export const RealmAppSelector: React.FC<RealmAppSelectorProps> = ({
       getRealmApps.execute();
     }
   }, [getRealmApps]);
+
+  const onSelectAppById = (appId: string) => {
+    const details = getRealmApps.value?.find(d => d._id === appId);
+    if (details) {
+      onSelectApp(details);
+    }
+  };
 
   const renderButtonBar = (showNext = false) => (
     <>
@@ -38,10 +52,12 @@ export const RealmAppSelector: React.FC<RealmAppSelectorProps> = ({
         >
           Back
         </Button>
+        <Spacer direction="flex" />
         {showNext && (
           <Button
             variant="primary"
             disabled={!realmAppId}
+            onClick={() => onSelectAppById(realmAppId)}
           >
             Next
           </Button>
@@ -90,6 +106,7 @@ export const RealmAppSelector: React.FC<RealmAppSelectorProps> = ({
       <Spacer size="s" />
       <RadioBoxGroup
         id="realmApps"
+        className="radio-box-group--vertical"
         value={realmAppId}
         onChange={e => setRealmAppId(e.target.value)}
       >

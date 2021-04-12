@@ -1,12 +1,16 @@
+import { RealmAppServiceApi } from '../../services';
 
-export interface RealmAuthData {
-    accessToken: string;
+export interface RealmServiceData {
+    publicKey: string;
+    privateKey: string;
     groupId: string;
     appId: string;
     serviceId: string;
 }
 
 export interface RealmContext {
-    realm?: RealmAuthData | undefined;
-    configureRealm: (data: RealmAuthData) => void;
+    realmServiceData?: RealmServiceData | undefined;
+    serviceApi?: RealmAppServiceApi | undefined;
+    configureRealm: (data: RealmServiceData, service: RealmAppServiceApi) => void;
+    clear: () => void;
 }
