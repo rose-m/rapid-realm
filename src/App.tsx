@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import { BrowserRouter as Router, Redirect, Route, Switch } from 'react-router-dom';
 import { RealmAppManager } from './components/realm-app-manager';
 import { RealmConfiguration } from './components/realm-configuration';
 import { ProvideRealm } from './context';
@@ -11,11 +11,14 @@ function App() {
         <ProvideRealm>
           <Route>
             <Switch>
-              <Route path="/configure">
+              <Route exact path="/configure">
                 <RealmConfiguration />
               </Route>
-              <Route path="*">
+              <Route path="/app">
                 <RealmAppManager />
+              </Route>
+              <Route path="*">
+                <Redirect to="/app" />
               </Route>
             </Switch>
           </Route>
