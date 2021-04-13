@@ -2,13 +2,13 @@ import Banner from '@leafygreen-ui/banner';
 import Button from '@leafygreen-ui/button';
 import Code from '@leafygreen-ui/code';
 import Icon from '@leafygreen-ui/icon';
-import { Cell, Row, Table, TableHeader } from '@leafygreen-ui/table';
 import TextArea from '@leafygreen-ui/text-area';
 import TextInput from '@leafygreen-ui/text-input';
-import { InlineCode, Subtitle } from '@leafygreen-ui/typography';
+import { Subtitle } from '@leafygreen-ui/typography';
 import { useEffect, useState } from 'react';
-import { FunctionDescriptor, FunctionType, FunctionVariable, RealmAppServiceWebhookDetails, RealmLambda } from '../../../services';
+import { FunctionDescriptor, FunctionVariable, RealmAppServiceWebhookDetails, RealmLambda } from '../../../services';
 import { Spacer } from '../../../typography';
+import { EndpointDetailsFunctionVariables } from './function-variables';
 import './functionality.less';
 
 export interface EndpointDetailsFunctionalityEditingState {
@@ -31,8 +31,6 @@ export const EndpointDetailsFunctionality: React.FC<EndpointDetailsFunctionality
     const parsed = RealmLambda.parseFunctionSource(webhookDetails.function_source);
     setFunctionDescriptor(parsed);
   }, [webhookDetails.function_source]);
-
-  const [isSourceDirty, setIsSourceDirty] = useState(false);
 
   const [editState, setEditState] = useState({
     database: '',
@@ -77,16 +75,21 @@ export const EndpointDetailsFunctionality: React.FC<EndpointDetailsFunctionality
   const onUpdateDatabase = (database: string) => setEditState({ ...editState, database });
   const onUpdateCollection = (collection: string) => setEditState({ ...editState, collection });
   const onUpdateSource = (source: string) => {
-    setIsSourceDirty(source !== webhookDetails.function_source)
     setEditState({
       ...editState,
       queryOrAggregation: source
     });
   };
-  const onUpdateVariables = () => {
+  const onParseQueryOrAggregation = () => {
     setEditState({
       ...editState,
       lastParsedQueryOrAggregation: editState.queryOrAggregation
+    });
+  };
+  const onUpdateVariables = (variables: FunctionVariable[]) => {
+    setEditState({
+      ...editState,
+      variables
     });
   };
 
@@ -116,13 +119,13 @@ export const EndpointDetailsFunctionality: React.FC<EndpointDetailsFunctionality
               variant="primary"
               size="small"
               leftGlyph={<Icon glyph="Refresh" />}
-              onClick={onUpdateVariables}
+              onClick={onParseQueryOrAggregation}
             >
-              Update Variables
+              Parse Query or Aggregation
             </Button>
             <Spacer size="s" />
             <Banner>
-              You have to update the variables before you can publish an update to ensure all information is up to date.
+              You have to parse the query or aggregation in order to update the variables before you can publish an update to ensure all information is up to date.
             </Banner>
           </>
         )}
@@ -132,33 +135,11 @@ export const EndpointDetailsFunctionality: React.FC<EndpointDetailsFunctionality
 
   const renderVariables = () => {
     return (
-      <Table
-        data={functionDescriptor?.variables ?? []}
-        columns={[
-          <TableHeader label="Name" />,
-          <TableHeader label="Type" />,
-          <TableHeader label="Required / Default" />
-        ]}
-      >
-        {(row: { datum: any }) => (
-          <Row key={row.datum.name}>
-            <Cell>{row.datum.name}</Cell>
-            <Cell>
-              <InlineCode>{row.datum.type}</InlineCode>
-            </Cell>
-            <Cell>
-              {row.datum.default === undefined ? (
-                <b>required</b>
-              ) : (
-                <>
-                  <i>default: </i>
-                  <InlineCode>{'' + row.datum.default}</InlineCode>
-                </>
-              )}
-            </Cell>
-          </Row>
-        )}
-      </Table>
+      <EndpointDetailsFunctionVariables
+        editing={editing}
+        variables={editing ? editState.variables : functionDescriptor?.variables ?? []}
+        onUpdateVariables={onUpdateVariables}
+      />
     );
   };
 

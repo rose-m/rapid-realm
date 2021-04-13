@@ -7,7 +7,7 @@ import Icon from '@leafygreen-ui/icon';
 import { Subtitle } from '@leafygreen-ui/typography';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { RealmAppServiceApi } from '../../../services';
+import { RealmAppServiceApi, RealmLambda } from '../../../services';
 import { Loader, Spacer } from '../../../typography';
 import { useAsync } from '../../../utils';
 import { EndpointDetailsFunctionality, EndpointDetailsFunctionalityEditingState } from './functionality';
@@ -35,6 +35,14 @@ export const RealmEndpointDetails: React.FC<RealmEndpointDetailsProps> = ({
       getWebhookDetails.execute();
     }
   }, [getWebhookDetails]);
+
+  const onPublishUpdates = () => {
+    if (!editing || !functionalityEditingState?.isValid || !functionalityEditingState?.descriptor) {
+      return;
+    }
+    console.log(RealmLambda.generateFunctionSource(functionalityEditingState.descriptor));
+    setEditing(false);
+  };
 
   const renderEndpointURL = () => {
     if (!getWebhookDetails.value) {
@@ -104,7 +112,7 @@ export const RealmEndpointDetails: React.FC<RealmEndpointDetailsProps> = ({
         mayPublish={functionalityEditingState?.isValid}
         onEditWebhook={() => setEditing(true)}
         onCancelEditing={() => setEditing(false)}
-        onPublishUpdates={() => setEditing(false)}
+        onPublishUpdates={onPublishUpdates}
       />
 
       <Spacer size="xl" />
