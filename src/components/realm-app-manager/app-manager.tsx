@@ -1,5 +1,6 @@
 import Badge from '@leafygreen-ui/badge';
 import Button from '@leafygreen-ui/button';
+import Icon from '@leafygreen-ui/icon';
 import { RealmLogoMark } from '@leafygreen-ui/logo';
 import { Body, H2 } from '@leafygreen-ui/typography';
 import { Redirect, Route, Switch, useHistory, useRouteMatch } from 'react-router';
@@ -49,6 +50,7 @@ export const RealmAppManager: React.FC = () => {
         <Spacer direction="flex" />
 
         <Button
+          leftGlyph={<Icon glyph="Unlock" />}
           onClick={() => realm.clear()}
         >
           Logout

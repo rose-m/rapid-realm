@@ -96,7 +96,7 @@ export const RealmEndpointDetails: React.FC<RealmEndpointDetailsProps> = ({
         Back to Overview
       </Button>
 
-      <Spacer />
+      <Spacer size="l" />
 
       <EndpointDetailsHeader
         webhookDetails={getWebhookDetails.value}
@@ -107,10 +107,10 @@ export const RealmEndpointDetails: React.FC<RealmEndpointDetailsProps> = ({
         onPublishUpdates={() => setEditing(false)}
       />
 
-      <Spacer size="l" />
+      <Spacer size="xl" />
 
       {renderEndpointURL()}
-      <Spacer />
+      <Spacer size="xl" />
       {renderContent()}
     </Card>
   );

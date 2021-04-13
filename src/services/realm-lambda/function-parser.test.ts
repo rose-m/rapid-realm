@@ -1,5 +1,5 @@
 import { parseFunctionSource } from './function-parser';
-import { generateFunctionSource } from './generator';
+import { generateFunctionSource } from './function-generator';
 import { FunctionDescriptor } from './types';
 
 describe('Function Parser', () => {
@@ -16,11 +16,12 @@ describe('Function Parser', () => {
     beforeAll(() => {
       functionDescriptor = {
         type: 'query',
-        database: 'db1',
-        collection: 'coll1',
-        query: '{\nage: { $gt: count }\n}',
+        database: 'sample_mflix',
+        collection: 'movies',
+        queryOrAggregation: `{ type: type, year: { $gt: year } }`,
         variables: [
-          { name: 'count', type: 'number', default: '42' }
+          { name: 'type', type: 'string', default: 'movie' },
+          { name: 'year', type: 'number', default: undefined }
         ]
       };
       functionSource = generateFunctionSource(functionDescriptor);

@@ -4,17 +4,16 @@ import Code from '@leafygreen-ui/code';
 import Icon from '@leafygreen-ui/icon';
 import { Cell, Row, Table, TableHeader } from '@leafygreen-ui/table';
 import TextArea from '@leafygreen-ui/text-area';
+import TextInput from '@leafygreen-ui/text-input';
 import { InlineCode, Subtitle } from '@leafygreen-ui/typography';
 import { useEffect, useState } from 'react';
-import { FunctionType, FunctionVariable, RealmAppServiceWebhookDetails } from '../../../services';
+import { FunctionDescriptor, FunctionType, FunctionVariable, RealmAppServiceWebhookDetails, RealmLambda } from '../../../services';
 import { Spacer } from '../../../typography';
 import './functionality.less';
 
 export interface EndpointDetailsFunctionalityEditingState {
   isValid: boolean;
-  variables: FunctionVariable[];
-  type: FunctionType;
-  source: string;
+  descriptor: FunctionDescriptor;
 }
 
 export interface EndpointDetailsFunctionalityProps {
@@ -27,52 +26,67 @@ export interface EndpointDetailsFunctionalityProps {
 export const EndpointDetailsFunctionality: React.FC<EndpointDetailsFunctionalityProps> = ({
   webhookDetails, editing = false, onEditChange
 }) => {
-  const [variables, setVariables] = useState<FunctionVariable[]>([
-    { name: 'id', type: 'string', default: undefined },
-    { name: 'count', type: 'number', default: 42 },
-    { name: 'flag', type: 'boolean', default: true },
-  ]);
+  const [functionDescriptor, setFunctionDescriptor] = useState<FunctionDescriptor | undefined>();
+  useEffect(() => {
+    const parsed = RealmLambda.parseFunctionSource(webhookDetails.function_source);
+    setFunctionDescriptor(parsed);
+  }, [webhookDetails.function_source]);
 
   const [isSourceDirty, setIsSourceDirty] = useState(false);
 
   const [editState, setEditState] = useState({
-    lastVariableSource: '',
-    source: ''
+    database: '',
+    collection: '',
+    lastParsedQueryOrAggregation: '',
+    queryOrAggregation: '',
+    variables: [] as FunctionVariable[]
   });
   useEffect(() => {
     if (editing) {
       setEditState({
-        lastVariableSource: webhookDetails.function_source,
-        source: webhookDetails.function_source
+        database: functionDescriptor?.database ?? '',
+        collection: functionDescriptor?.collection ?? '',
+        lastParsedQueryOrAggregation: functionDescriptor?.queryOrAggregation ?? '',
+        queryOrAggregation: functionDescriptor?.queryOrAggregation ?? '',
+        variables: functionDescriptor?.variables.map(v => ({ ...v })) ?? []
       });
     }
-  }, [editing, webhookDetails.function_source]);
+  }, [editing, functionDescriptor]);
+
   useEffect(() => {
+    if (!editing) {
+      return;
+    }
+
     const isValid = () => {
-      return !!editState.source.trim() && editState.source === editState.lastVariableSource;
+      return !!editState.database.trim() && !!editState.collection.trim() && !!editState.queryOrAggregation.trim() && editState.queryOrAggregation === editState.lastParsedQueryOrAggregation;
     };
 
     onEditChange?.({
       isValid: isValid(),
-      variables,
-      type: 'query',
-      source: editState.source
+      descriptor: {
+        type: 'query',
+        database: editState.database,
+        collection: editState.collection,
+        queryOrAggregation: editState.queryOrAggregation,
+        variables: editState.variables
+      }
     });
-  }, [variables, editState, onEditChange]);
+  }, [editing, functionDescriptor, editState, onEditChange]);
 
-
+  const onUpdateDatabase = (database: string) => setEditState({ ...editState, database });
+  const onUpdateCollection = (collection: string) => setEditState({ ...editState, collection });
   const onUpdateSource = (source: string) => {
     setIsSourceDirty(source !== webhookDetails.function_source)
     setEditState({
       ...editState,
-      source
+      queryOrAggregation: source
     });
   };
-
   const onUpdateVariables = () => {
     setEditState({
       ...editState,
-      lastVariableSource: editState.source
+      lastParsedQueryOrAggregation: editState.queryOrAggregation
     });
   };
 
@@ -82,7 +96,7 @@ export const EndpointDetailsFunctionality: React.FC<EndpointDetailsFunctionality
         <Code
           language="javascript"
         >
-          {webhookDetails.function_source}
+          {functionDescriptor?.queryOrAggregation ?? ''}
         </Code>
       );
     }
@@ -91,11 +105,11 @@ export const EndpointDetailsFunctionality: React.FC<EndpointDetailsFunctionality
       <>
         <TextArea
           label="Edit Query / Aggregation"
-          value={editState.source}
+          value={editState.queryOrAggregation}
           className="endpoint-details-functionality__source"
-          onChange={e => onUpdateSource(e.target.value.trim())}
+          onChange={e => onUpdateSource(e.target.value)}
         />
-        {editState.source !== editState.lastVariableSource && (
+        {editState.queryOrAggregation !== editState.lastParsedQueryOrAggregation && (
           <>
             <Spacer />
             <Button
@@ -116,17 +130,10 @@ export const EndpointDetailsFunctionality: React.FC<EndpointDetailsFunctionality
     )
   };
 
-  return (
-    <>
-      <Subtitle>Query</Subtitle>
-      <Spacer />
-      {renderCode()}
-      <Spacer size="l" />
-
-      <Subtitle>Variables</Subtitle>
-      <Spacer />
+  const renderVariables = () => {
+    return (
       <Table
-        data={variables ?? []}
+        data={functionDescriptor?.variables ?? []}
         columns={[
           <TableHeader label="Name" />,
           <TableHeader label="Type" />,
@@ -152,6 +159,47 @@ export const EndpointDetailsFunctionality: React.FC<EndpointDetailsFunctionality
           </Row>
         )}
       </Table>
+    );
+  };
+
+  return functionDescriptor ? (
+    <>
+      <Subtitle>Database / Collection</Subtitle>
+      <Spacer />
+      <TextInput
+        label="Database"
+        value={editing ? editState.database : functionDescriptor.database}
+        description="Name of the MongoDB database in your Atlas Cluster to execute the query or aggregation against."
+        disabled={!editing}
+        onChange={e => onUpdateDatabase(e.target.value)}
+        state={editing && !editState.database.trim() ? 'error' : 'none'}
+      />
+      <Spacer />
+      <TextInput
+        label="Collection"
+        value={editing ? editState.collection : functionDescriptor.collection}
+        description="Name of the MongoDB collection in your Atlas database to execute the query or aggregation against."
+        disabled={!editing}
+        onChange={e => onUpdateCollection(e.target.value)}
+        state={editing && !editState.collection.trim() ? 'error' : 'none'}
+      />
+      <Spacer size="xl" />
+
+      <Subtitle>Query / Aggregation</Subtitle>
+      <Spacer />
+      {renderCode()}
+      <Spacer size="xl" />
+
+      <Subtitle>Variables</Subtitle>
+      <Spacer />
+      {renderVariables()}
     </>
+  ) : (
+    <Banner
+      variant="danger"
+    >
+      Could not parse the source code of this endpoint. You cannot manage non-Rapid Realm endpoints in this application.<br />
+      You can still go into edit mode but publishing <b>will overwrite any existing code.</b>
+    </Banner>
   );
 };

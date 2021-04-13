@@ -1,5 +1,5 @@
 import { parseFunctionSource } from './function-parser';
-import { generateFunctionSource } from './generator';
+import { generateFunctionSource } from './function-generator';
 
 export * from './types';
 export const RealmLambda = {

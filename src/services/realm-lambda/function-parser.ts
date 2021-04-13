@@ -1,8 +1,8 @@
 import { FunctionDescriptor } from './types';
-import { FUNCTION_TEMPLATE_MARKER } from './generator';
+import { FUNCTION_TEMPLATE_MARKER } from './function-generator';
 
 const FUNCTION_MARKER_REGEX = new RegExp(`^\\s*${FUNCTION_TEMPLATE_MARKER}`);
-const FUNCTION_DESCRIPTOR_REGEX = /\/\/DESCRIPTOR>>(.+)$/m;
+const FUNCTION_DESCRIPTOR_REGEX = /\/\/\s*DESCRIPTOR>>(.+)$/m;
 
 export function parseFunctionSource(source: string): FunctionDescriptor | undefined {
   if (!FUNCTION_MARKER_REGEX.test(source)) {

@@ -7,18 +7,10 @@ export interface FunctionVariable {
     default: any;
 }
 
-export type FunctionDescriptor = QueryFunctionDescriptor | AggregationFunctionDescriptor;
-interface FunctionDescriptorFields {
+export interface FunctionDescriptor {
     type: FunctionType;
     database: string;
     collection: string;
     variables: FunctionVariable[];
-}
-export interface QueryFunctionDescriptor extends FunctionDescriptorFields {
-    type: 'query';
-    query: string;
-}
-export interface AggregationFunctionDescriptor extends FunctionDescriptorFields {
-    type: 'aggregation';
-    aggregation: string;
+    queryOrAggregation: string;
 }
