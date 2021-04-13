@@ -1,4 +1,19 @@
-@import '../node_modules/@leafygreen-ui/palette/dist/ui-colors.less';
+@import 'normalize.css/normalize.css';
+@import '@leafygreen-ui/palette/dist/ui-colors.less';
+
+html {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+*,
+*::before,
+*::after {
+  -webkit-box-sizing: inherit;
+  -moz-box-sizing: inherit;
+  box-sizing: inherit;
+}
 
 body {
   margin: 0;
@@ -9,8 +24,8 @@ body {
   background: @leafygreen__gray--light-2;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
+code, pre {
+  font-family: 'Source Code Pro', source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
 }
 
 /********

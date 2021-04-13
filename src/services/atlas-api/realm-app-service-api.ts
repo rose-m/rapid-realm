@@ -43,7 +43,20 @@ export class RealmAppServiceApi {
     await assertResponseOk(response);
 
     const data: RealmAppServiceWebhookDetails = await response.json();
-    return data;
+    return {
+      ...data,
+      $url: this.getWebhookUrl(data.name)
+    };
+  }
+
+  public getWebhookUrl(webhookName: string): string {
+    const appDetails = this.getApp().getDetails();
+    const locationMap: Record<string, string> = {
+      'US-VA': 'us-east-1',
+      'US-OR': 'us-west-2'
+    };
+    const location = appDetails.location in locationMap ? locationMap[appDetails.location] : appDetails.location;
+    return `https://${location}.aws.webhooks.mongodb-realm.com/api/client/v2.0/app/${appDetails.client_app_id}/service/${this.details.name}/incoming_webhook/${webhookName}`;
   }
 
 }

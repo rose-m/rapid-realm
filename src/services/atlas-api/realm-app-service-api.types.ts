@@ -25,4 +25,5 @@ export interface RealmAppServiceWebhookDetails extends RealmAppServiceWebhookBas
   run_as_authed_user: boolean;
   run_as_user_id: string;
   run_as_user_id_script_source: string;
+  $url?: string;
 }

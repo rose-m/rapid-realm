@@ -71,4 +71,3 @@ declare module '*.module.sass' {
 }
 
 declare module '@leafygreen-ui/button';
-declare module '@leafygreen-ui/table';

@@ -6,7 +6,7 @@ import { Redirect, Route, Switch, useHistory, useRouteMatch } from 'react-router
 import { useRealm } from '../../context/realm';
 import { Loader, Spacer } from '../../typography';
 import { RealmEndpointsOverview } from './endpoints-overview';
-import { RealmEndpointDetails } from './endpoint-details';
+import { RealmEndpointDetails } from './endpoint-details/endpoint-details';
 import './app-manager.less';
 
 export const RealmAppManager: React.FC = () => {
