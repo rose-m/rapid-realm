@@ -2,16 +2,19 @@ import Banner from '@leafygreen-ui/banner';
 import Button from '@leafygreen-ui/button';
 import Code from '@leafygreen-ui/code';
 import Icon from '@leafygreen-ui/icon';
-import TextArea from '@leafygreen-ui/text-area';
 import { Cell, Row, Table, TableHeader } from '@leafygreen-ui/table';
+import TextArea from '@leafygreen-ui/text-area';
 import { InlineCode, Subtitle } from '@leafygreen-ui/typography';
-import { RealmAppServiceWebhookDetails } from '../../../services';
-import { Spacer } from '../../../typography';
 import { useEffect, useState } from 'react';
+import { FunctionType, FunctionVariable, RealmAppServiceWebhookDetails } from '../../../services';
+import { Spacer } from '../../../typography';
 import './functionality.less';
 
 export interface EndpointDetailsFunctionalityEditingState {
   isValid: boolean;
+  variables: FunctionVariable[];
+  type: FunctionType;
+  source: string;
 }
 
 export interface EndpointDetailsFunctionalityProps {
@@ -24,11 +27,11 @@ export interface EndpointDetailsFunctionalityProps {
 export const EndpointDetailsFunctionality: React.FC<EndpointDetailsFunctionalityProps> = ({
   webhookDetails, editing = false, onEditChange
 }) => {
-  const variables = [
+  const [variables, setVariables] = useState<FunctionVariable[]>([
     { name: 'id', type: 'string', default: undefined },
     { name: 'count', type: 'number', default: 42 },
     { name: 'flag', type: 'boolean', default: true },
-  ];
+  ]);
 
   const [isSourceDirty, setIsSourceDirty] = useState(false);
 
@@ -50,9 +53,12 @@ export const EndpointDetailsFunctionality: React.FC<EndpointDetailsFunctionality
     };
 
     onEditChange?.({
-      isValid: isValid()
+      isValid: isValid(),
+      variables,
+      type: 'query',
+      source: editState.source
     });
-  }, [editState, onEditChange]);
+  }, [variables, editState, onEditChange]);
 
 
   const onUpdateSource = (source: string) => {
