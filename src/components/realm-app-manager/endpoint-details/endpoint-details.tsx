@@ -26,6 +26,7 @@ export const RealmEndpointDetails: React.FC<RealmEndpointDetailsProps> = ({
 }) => {
   const { webhookId } = useParams() as { webhookId: string };
   const [state, setState] = useState<EndpointDetailsState>('default');
+  const [showPublishError, setShowPublishError] = useState(false);
   const [functionalityEditingState, setFunctionalityEditingState] = useState<EndpointDetailsFunctionalityEditingState | undefined>();
 
   const getWebhookDetails = useAsync(async () => {
@@ -38,6 +39,7 @@ export const RealmEndpointDetails: React.FC<RealmEndpointDetailsProps> = ({
   }, [getWebhookDetails]);
 
   const updateWebhook = useAsync(async (functionSource: string) => {
+    setShowPublishError(false);
     return await serviceApi.updateWebhook(webhookId, {
       name: getWebhookDetails.value!.name,
       function_source: functionSource,
@@ -51,11 +53,20 @@ export const RealmEndpointDetails: React.FC<RealmEndpointDetailsProps> = ({
   useEffect(() => {
     if (state !== 'publishing' || updateWebhook.status === 'idle') {
       return;
-    } else if (updateWebhook.status !== 'pending') {
+    } else if (updateWebhook.status === 'success') {
       setState('default');
       getWebhookDetails.reset();
+    } else if (updateWebhook.status === 'error') {
+      setState('editing');
+      setShowPublishError(true);
     }
   }, [state, updateWebhook.status, getWebhookDetails]);
+
+  useEffect(() => {
+    if (state === 'default') {
+      setShowPublishError(false);
+    }
+  }, [state]);
 
   const onPublishUpdates = () => {
     if (state !== 'editing' || !functionalityEditingState?.isValid || !functionalityEditingState?.descriptor) {
@@ -105,15 +116,11 @@ export const RealmEndpointDetails: React.FC<RealmEndpointDetailsProps> = ({
       return (
         <Loader loading={true} />
       );
-    } else if (state === 'publishing') {
-      return (
-        <Loader loading={true} label="Publishing updated endpoint..." />
-      );
     } else {
       return (
         <EndpointDetailsFunctionality
           webhookDetails={getWebhookDetails.value}
-          editing={state === 'editing'}
+          state={state}
           onEditChange={setFunctionalityEditingState}
         />
       )
@@ -144,7 +151,20 @@ export const RealmEndpointDetails: React.FC<RealmEndpointDetailsProps> = ({
       <Spacer size="xl" />
 
       {renderEndpointURL()}
+
       <Spacer size="xl" />
+
+      {showPublishError && (
+        <>
+          <Banner
+            variant="danger"
+          >
+            Publishing your endpoint details failed. Please try again later.
+          </Banner>
+          <Spacer />
+        </>
+      )}
+
       {renderContent()}
     </Card>
   );

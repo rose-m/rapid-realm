@@ -7,9 +7,10 @@ import TextInput from '@leafygreen-ui/text-input';
 import { Subtitle } from '@leafygreen-ui/typography';
 import { useEffect, useState } from 'react';
 import { FunctionDescriptor, FunctionType, FunctionVariable, QueryOrAggregationParseResult, RealmAppServiceWebhookDetails, RealmLambda } from '../../../services';
-import { Spacer } from '../../../typography';
+import { Spacer, Loader } from '../../../typography';
 import { EndpointDetailsFunctionVariables } from './function-variables';
 import './functionality.less';
+import { EndpointDetailsState } from './types';
 
 export interface EndpointDetailsFunctionalityEditingState {
   isValid: boolean;
@@ -18,13 +19,13 @@ export interface EndpointDetailsFunctionalityEditingState {
 
 export interface EndpointDetailsFunctionalityProps {
   webhookDetails: RealmAppServiceWebhookDetails;
-  editing?: boolean;
+  state: EndpointDetailsState;
 
   onEditChange?: (state: EndpointDetailsFunctionalityEditingState) => void;
 }
 
 export const EndpointDetailsFunctionality: React.FC<EndpointDetailsFunctionalityProps> = ({
-  webhookDetails, editing = false, onEditChange
+  webhookDetails, state = 'default', onEditChange
 }) => {
   const [functionDescriptor, setFunctionDescriptor] = useState<FunctionDescriptor | undefined>();
   useEffect(() => {
@@ -42,7 +43,7 @@ export const EndpointDetailsFunctionality: React.FC<EndpointDetailsFunctionality
     variables: [] as FunctionVariable[]
   });
   useEffect(() => {
-    if (editing) {
+    if (state === 'default') {
       setEditState({
         type: functionDescriptor?.type ?? 'query',
         database: functionDescriptor?.database ?? '',
@@ -53,10 +54,10 @@ export const EndpointDetailsFunctionality: React.FC<EndpointDetailsFunctionality
         variables: functionDescriptor?.variables.map(v => ({ ...v })) ?? []
       });
     }
-  }, [editing, functionDescriptor]);
+  }, [state, functionDescriptor]);
 
   useEffect(() => {
-    if (!editing) {
+    if (state !== 'editing') {
       return;
     }
 
@@ -74,7 +75,7 @@ export const EndpointDetailsFunctionality: React.FC<EndpointDetailsFunctionality
         variables: editState.variables
       }
     });
-  }, [editing, functionDescriptor, editState, onEditChange]);
+  }, [state, functionDescriptor, editState, onEditChange]);
 
   const onUpdateDatabase = (database: string) => setEditState({ ...editState, database });
   const onUpdateCollection = (collection: string) => setEditState({ ...editState, collection });
@@ -116,7 +117,7 @@ export const EndpointDetailsFunctionality: React.FC<EndpointDetailsFunctionality
   };
 
   const renderCode = () => {
-    if (!editing) {
+    if (state === 'default') {
       return (
         <Code
           language="javascript"
@@ -167,12 +168,18 @@ export const EndpointDetailsFunctionality: React.FC<EndpointDetailsFunctionality
   const renderVariables = () => {
     return (
       <EndpointDetailsFunctionVariables
-        editing={editing}
-        variables={editing ? editState.variables : functionDescriptor?.variables ?? []}
+        editing={state !== 'default'}
+        variables={state !== 'default' ? editState.variables : functionDescriptor?.variables ?? []}
         onUpdateVariables={onUpdateVariables}
       />
     );
   };
+
+  if (state === 'publishing') {
+    return (
+      <Loader loading={true} label="Publishing updated endpoint..." />
+    );
+  }
 
   return functionDescriptor ? (
     <>
@@ -180,20 +187,20 @@ export const EndpointDetailsFunctionality: React.FC<EndpointDetailsFunctionality
       <Spacer />
       <TextInput
         label="Database"
-        value={editing ? editState.database : functionDescriptor.database}
+        value={state !== 'default' ? editState.database : functionDescriptor.database}
         description="Name of the MongoDB database in your Atlas Cluster to execute the query or aggregation against."
-        disabled={!editing}
+        disabled={state === 'default'}
         onChange={e => onUpdateDatabase(e.target.value)}
-        state={editing && !editState.database.trim() ? 'error' : 'none'}
+        state={state === 'editing' && !editState.database.trim() ? 'error' : 'none'}
       />
       <Spacer />
       <TextInput
         label="Collection"
-        value={editing ? editState.collection : functionDescriptor.collection}
+        value={state !== 'default' ? editState.collection : functionDescriptor.collection}
         description="Name of the MongoDB collection in your Atlas database to execute the query or aggregation against."
-        disabled={!editing}
+        disabled={state === 'default'}
         onChange={e => onUpdateCollection(e.target.value)}
-        state={editing && !editState.collection.trim() ? 'error' : 'none'}
+        state={state === 'editing' && !editState.collection.trim() ? 'error' : 'none'}
       />
       <Spacer size="xl" />
 

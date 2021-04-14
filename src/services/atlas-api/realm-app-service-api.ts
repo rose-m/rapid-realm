@@ -50,15 +50,18 @@ export class RealmAppServiceApi {
   }
 
   public async updateWebhook(webhookId: string, payload: RealmAppServiceUpdateWebhookPayload): Promise<void> {
-    const response = await fetch(
-      `${RealmApi.API_BASE_URL}/groups/${this.realmApp.getDetails().group_id}/apps/${this.realmApp.getDetails()._id}/services/${this.details._id}/incoming_webhooks/${webhookId}`,
-      {
-        method: 'PUT',
-        body: JSON.stringify(payload),
-        headers: this.realmApp.getRealm().getAuthHeaders()
-      }
-    );
-    await assertResponseOk(response);
+    // const response = await fetch(
+    //   `${RealmApi.API_BASE_URL}/groups/${this.realmApp.getDetails().group_id}/apps/${this.realmApp.getDetails()._id}/services/${this.details._id}/incoming_webhooks/${webhookId}`,
+    //   {
+    //     method: 'PUT',
+    //     body: JSON.stringify(payload),
+    //     headers: this.realmApp.getRealm().getAuthHeaders()
+    //   }
+    // );
+    // await assertResponseOk(response);
+    return new Promise<void>((resolve, reject) => {
+      setTimeout(() => reject(new Error('failed')), 3000);
+    });
   }
 
   public getWebhookUrl(webhookName: string): string {
