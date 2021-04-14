@@ -150,6 +150,7 @@ export const RealmEndpointDetails: React.FC<RealmEndpointDetailsProps> = ({
     } else {
       return (
         <EndpointDetailsFunctionality
+          serviceApi={serviceApi}
           webhookDetails={getWebhookDetails.value}
           state={state}
           onEditChange={setFunctionalityEditingState}

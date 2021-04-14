@@ -16,6 +16,7 @@ describe('Function Parser', () => {
     beforeAll(() => {
       functionDescriptor = {
         type: 'query',
+        dataSource: 'mongodb-atlas',
         database: 'sample_mflix',
         collection: 'movies',
         queryOrAggregation: `{ type: type, year: { $gt: year } }`,

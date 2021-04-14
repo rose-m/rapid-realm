@@ -17,7 +17,7 @@ exports = function(payload, response) {
 
     ${functionDescriptor.variables.map(generateVariableStatement).join('\n')} 
 
-    const $mdb = context.services.get('mongodb-atlas');
+    const $mdb = context.services.get(${JSON.stringify(functionDescriptor.dataSource)});
     const $collection = $mdb.db(${JSON.stringify(functionDescriptor.database)}).collection(${JSON.stringify(functionDescriptor.collection)})
     return $collection.${generateFunctionCall(functionDescriptor)};
 };

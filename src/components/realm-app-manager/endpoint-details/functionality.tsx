@@ -1,13 +1,14 @@
 import Banner from '@leafygreen-ui/banner';
 import Button from '@leafygreen-ui/button';
-import Code from '@leafygreen-ui/code';
 import Icon from '@leafygreen-ui/icon';
+import { Option, Select } from '@leafygreen-ui/select';
 import TextArea from '@leafygreen-ui/text-area';
 import TextInput from '@leafygreen-ui/text-input';
 import { Subtitle } from '@leafygreen-ui/typography';
-import { useEffect, useState } from 'react';
-import { FunctionDescriptor, FunctionType, FunctionVariable, QueryOrAggregationParseResult, RealmAppServiceWebhookDetails, RealmLambda } from '../../../services';
-import { Spacer, Loader } from '../../../typography';
+import { useCallback, useEffect, useState } from 'react';
+import { FunctionDescriptor, FunctionType, FunctionVariable, QueryOrAggregationParseResult, RealmAppServiceApi, RealmAppServiceWebhookDetails, RealmLambda, RealmServiceType } from '../../../services';
+import { Loader, Spacer } from '../../../typography';
+import { useAsync } from '../../../utils';
 import { EndpointDetailsFunctionVariables } from './function-variables';
 import './functionality.less';
 import { EndpointDetailsState } from './types';
@@ -18,6 +19,7 @@ export interface EndpointDetailsFunctionalityEditingState {
 }
 
 export interface EndpointDetailsFunctionalityProps {
+  serviceApi: RealmAppServiceApi;
   webhookDetails: RealmAppServiceWebhookDetails;
   state: EndpointDetailsState;
 
@@ -25,16 +27,12 @@ export interface EndpointDetailsFunctionalityProps {
 }
 
 export const EndpointDetailsFunctionality: React.FC<EndpointDetailsFunctionalityProps> = ({
-  webhookDetails, state = 'default', onEditChange
+  serviceApi, webhookDetails, state = 'default', onEditChange
 }) => {
   const [functionDescriptor, setFunctionDescriptor] = useState<FunctionDescriptor | undefined>();
-  useEffect(() => {
-    const parsed = RealmLambda.parseFunctionSource(webhookDetails.function_source);
-    setFunctionDescriptor(parsed);
-  }, [webhookDetails.function_source]);
-
   const [editState, setEditState] = useState({
     type: 'query' as FunctionType,
+    dataSource: '',
     database: '',
     collection: '',
     parseError: '',
@@ -42,9 +40,29 @@ export const EndpointDetailsFunctionality: React.FC<EndpointDetailsFunctionality
     queryOrAggregation: '',
     variables: [] as FunctionVariable[]
   });
+  const getDataSources = useAsync(async () => {
+    return (await serviceApi.getApp().getServices()).filter(s => s.type === RealmServiceType.MongoDbAtlas);
+  });
+  const isKnownDataSource = useCallback(
+    (name: string) => getDataSources.status !== 'success' || !!getDataSources.value?.find(s => s.name === name),
+    [getDataSources.status, getDataSources.value]
+  );
+
+  useEffect(() => {
+    if (getDataSources.status === 'idle') {
+      getDataSources.execute();
+    }
+  }, [getDataSources]);
+
+  useEffect(() => {
+    const parsed = RealmLambda.parseFunctionSource(webhookDetails.function_source);
+    setFunctionDescriptor(parsed);
+  }, [webhookDetails.function_source]);
+
   useEffect(() => {
     if (state === 'default') {
       setEditState({
+        dataSource: functionDescriptor?.dataSource ?? 'mongodb-atlas',
         type: functionDescriptor?.type ?? 'query',
         database: functionDescriptor?.database ?? '',
         collection: functionDescriptor?.collection ?? '',
@@ -62,21 +80,31 @@ export const EndpointDetailsFunctionality: React.FC<EndpointDetailsFunctionality
     }
 
     const isValid = () => {
-      return !!editState.database.trim() && !!editState.collection.trim() && !!editState.queryOrAggregation.trim() && editState.queryOrAggregation === editState.lastParsedQueryOrAggregation;
+      return !!editState.database.trim() &&
+        !!editState.collection.trim() &&
+        !!editState.queryOrAggregation.trim() &&
+        editState.queryOrAggregation === editState.lastParsedQueryOrAggregation &&
+        isKnownDataSource(editState.dataSource)
     };
 
     onEditChange?.({
       isValid: isValid(),
       descriptor: {
         type: editState.type,
+        dataSource: editState.dataSource,
         database: editState.database,
         collection: editState.collection,
         queryOrAggregation: editState.queryOrAggregation,
         variables: editState.variables
       }
     });
-  }, [state, functionDescriptor, editState, onEditChange]);
+  }, [state, functionDescriptor, editState, isKnownDataSource, onEditChange]);
 
+  const onUpdateDataSource = (dataSource: string) => {
+    if (dataSource) {
+      setEditState({ ...editState, dataSource })
+    }
+  };
   const onUpdateDatabase = (database: string) => setEditState({ ...editState, database });
   const onUpdateCollection = (collection: string) => setEditState({ ...editState, collection });
   const onUpdateSource = (source: string) => {
@@ -116,17 +144,49 @@ export const EndpointDetailsFunctionality: React.FC<EndpointDetailsFunctionality
     });
   };
 
-  const renderCode = () => {
+  const renderDataSource = () => {
+    let inputOrSelect: JSX.Element;
+    let dataSource: string | undefined;
     if (state === 'default') {
-      return (
-        <Code
-          language="javascript"
+      dataSource = functionDescriptor?.dataSource;
+      inputOrSelect = (
+        <TextInput
+          label="Atlas Data Source"
+          value={functionDescriptor?.dataSource}
+          state={!!dataSource && !isKnownDataSource(dataSource) ? 'error' : 'none'}
+          disabled={true}
+        />
+      );
+    } else {
+      dataSource = editState.dataSource;
+      inputOrSelect = (
+        <Select
+          label="Atlas Data Source"
+          readOnly={false}
+          onChange={onUpdateDataSource}
+          value={editState.dataSource}
         >
-          {functionDescriptor?.queryOrAggregation ?? ''}
-        </Code>
+          {getDataSources.value?.map(s => (
+            <Option key={s.name} value={s.name}>{s.name}</Option>
+          ))}
+        </Select>
       );
     }
 
+    return (<>
+      {inputOrSelect}
+      {!!dataSource && !isKnownDataSource(dataSource) && (<>
+        <Spacer />
+        <Banner
+          variant="danger"
+        >
+          The data source <i>{dataSource}</i> could not be found in your Realm app.
+        </Banner>
+      </>)}
+    </>);
+  };
+
+  const renderCode = () => {
     return (
       <>
         <TextArea
@@ -183,7 +243,9 @@ export const EndpointDetailsFunctionality: React.FC<EndpointDetailsFunctionality
 
   return functionDescriptor ? (
     <>
-      <Subtitle>Database / Collection</Subtitle>
+      <Subtitle>Data Source</Subtitle>
+      <Spacer />
+      {renderDataSource()}
       <Spacer />
       <TextInput
         label="Database"

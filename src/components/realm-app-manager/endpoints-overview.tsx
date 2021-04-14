@@ -30,6 +30,7 @@ export const RealmEndpointsOverview: React.FC<RealmEndpointsOverviewProps> = ({
   const addEndpoint = useAsync(async (endpointName: string) => {
     const emptySource = RealmLambda.generateFunctionSource({
       type: 'query',
+      dataSource: 'mongodb-atlas',
       database: 'databaseName',
       collection: 'collectionName',
       queryOrAggregation: '{}',

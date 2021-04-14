@@ -9,6 +9,7 @@ export interface FunctionVariable {
 
 export interface FunctionDescriptor {
   type: FunctionType;
+  dataSource: string;
   database: string;
   collection: string;
   variables: FunctionVariable[];
