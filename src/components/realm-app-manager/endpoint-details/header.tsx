@@ -6,10 +6,12 @@ import { useState } from 'react';
 import { RealmAppServiceWebhookDetails } from '../../../services';
 import { Spacer } from '../../../typography';
 import './header.less';
+import { EndpointDetailsState } from './types';
 
 export interface EndpointsDetailsHeaderProps {
   webhookDetails?: RealmAppServiceWebhookDetails | null;
-  editing?: boolean;
+  state?: EndpointDetailsState;
+  publishing?: boolean;
   mayPublish?: boolean;
 
   onEditWebhook?: () => void;
@@ -19,7 +21,7 @@ export interface EndpointsDetailsHeaderProps {
 }
 
 export const EndpointDetailsHeader: React.FC<EndpointsDetailsHeaderProps> = ({
-  webhookDetails, editing = false, mayPublish = false,
+  webhookDetails, state = 'default', mayPublish = false,
   onEditWebhook, onDeleteWebhook, onCancelEditing, onPublishUpdates
 }) => {
   const [showConfirmDeleteModal, setShowConfirmDeleteModal] = useState(false);
@@ -28,46 +30,52 @@ export const EndpointDetailsHeader: React.FC<EndpointsDetailsHeaderProps> = ({
     if (!webhookDetails) {
       return null;
     }
-    return !editing ? (
-      <>
-        <Button
-          size="xsmall"
-          leftGlyph={<Icon glyph="Edit" />}
-          onClick={() => onEditWebhook?.()}
-        >
-          Edit
-        </Button>
-        <Spacer direction="horizontal" size="s" />
-        <Button
-          size="xsmall"
-          variant="danger"
-          leftGlyph={<Icon glyph="Trash" />}
-          onClick={() => setShowConfirmDeleteModal(true)}
-        >
-          Delete
-        </Button>
-      </>
-    ) : (
-      <>
-        <Button
-          size="xsmall"
-          leftGlyph={<Icon glyph="X" />}
-          onClick={() => onCancelEditing?.()}
-        >
-          Cancel
-        </Button>
-        <Spacer direction="horizontal" size="s" />
-        <Button
-          size="xsmall"
-          variant="primary"
-          leftGlyph={<Icon glyph="Cloud" />}
-          onClick={() => onPublishUpdates?.()}
-          disabled={!mayPublish}
-        >
-          Publish
-        </Button>
-      </>
-    );
+    switch (state) {
+      case 'editing':
+        return (
+          <>
+            <Button
+              size="xsmall"
+              leftGlyph={<Icon glyph="X" />}
+              onClick={() => onCancelEditing?.()}
+            >
+              Cancel
+            </Button>
+            <Spacer direction="horizontal" size="s" />
+            <Button
+              size="xsmall"
+              variant="primary"
+              leftGlyph={<Icon glyph="Cloud" />}
+              onClick={() => onPublishUpdates?.()}
+              disabled={!mayPublish}
+            >
+              Publish
+            </Button>
+          </>
+        );
+      case 'default':
+        return (
+          <>
+            <Button
+              size="xsmall"
+              leftGlyph={<Icon glyph="Edit" />}
+              onClick={() => onEditWebhook?.()}
+            >
+              Edit
+            </Button>
+            <Spacer direction="horizontal" size="s" />
+            <Button
+              size="xsmall"
+              variant="danger"
+              leftGlyph={<Icon glyph="Trash" />}
+              onClick={() => setShowConfirmDeleteModal(true)}
+            >
+              Delete
+            </Button>
+          </>
+        )
+    }
+    return null;
   };
 
   const renderConfirmDeleteModal = () => {

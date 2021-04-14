@@ -1,6 +1,6 @@
 import { RealmApi } from './realm-api';
 import { RealmAppApi } from './realm-app-api';
-import { RealmAppServiceDetails, RealmAppServiceWebhookBasics, RealmAppServiceWebhookDetails } from './realm-app-service-api.types';
+import { RealmAppServiceDetails, RealmAppServiceUpdateWebhookPayload, RealmAppServiceWebhookBasics, RealmAppServiceWebhookDetails } from './realm-app-service-api.types';
 import { assertResponseOk } from './utils';
 
 export class RealmAppServiceApi {
@@ -47,6 +47,18 @@ export class RealmAppServiceApi {
       ...data,
       $url: this.getWebhookUrl(data.name)
     };
+  }
+
+  public async updateWebhook(webhookId: string, payload: RealmAppServiceUpdateWebhookPayload): Promise<void> {
+    const response = await fetch(
+      `${RealmApi.API_BASE_URL}/groups/${this.realmApp.getDetails().group_id}/apps/${this.realmApp.getDetails()._id}/services/${this.details._id}/incoming_webhooks/${webhookId}`,
+      {
+        method: 'PUT',
+        body: JSON.stringify(payload),
+        headers: this.realmApp.getRealm().getAuthHeaders()
+      }
+    );
+    await assertResponseOk(response);
   }
 
   public getWebhookUrl(webhookName: string): string {

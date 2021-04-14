@@ -27,3 +27,5 @@ export interface RealmAppServiceWebhookDetails extends RealmAppServiceWebhookBas
   run_as_user_id_script_source: string;
   $url?: string;
 }
+
+export type RealmAppServiceUpdateWebhookPayload = Pick<RealmAppServiceWebhookDetails, 'name' | 'function_source' | 'respond_result' | 'options'>;

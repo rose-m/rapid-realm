@@ -67,7 +67,7 @@ export const EndpointDetailsFunctionality: React.FC<EndpointDetailsFunctionality
     onEditChange?.({
       isValid: isValid(),
       descriptor: {
-        type: 'query',
+        type: editState.type,
         database: editState.database,
         collection: editState.collection,
         queryOrAggregation: editState.queryOrAggregation,

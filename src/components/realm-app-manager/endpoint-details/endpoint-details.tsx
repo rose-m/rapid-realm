@@ -12,6 +12,7 @@ import { Loader, Spacer } from '../../../typography';
 import { useAsync } from '../../../utils';
 import { EndpointDetailsFunctionality, EndpointDetailsFunctionalityEditingState } from './functionality';
 import { EndpointDetailsHeader } from './header';
+import { EndpointDetailsState } from './types';
 import './endpoint-details.less';
 
 export interface RealmEndpointDetailsProps {
@@ -24,7 +25,7 @@ export const RealmEndpointDetails: React.FC<RealmEndpointDetailsProps> = ({
   serviceApi, onBackToOverview
 }) => {
   const { webhookId } = useParams() as { webhookId: string };
-  const [editing, setEditing] = useState(false);
+  const [state, setState] = useState<EndpointDetailsState>('default');
   const [functionalityEditingState, setFunctionalityEditingState] = useState<EndpointDetailsFunctionalityEditingState | undefined>();
 
   const getWebhookDetails = useAsync(async () => {
@@ -36,12 +37,33 @@ export const RealmEndpointDetails: React.FC<RealmEndpointDetailsProps> = ({
     }
   }, [getWebhookDetails]);
 
+  const updateWebhook = useAsync(async (functionSource: string) => {
+    return await serviceApi.updateWebhook(webhookId, {
+      name: getWebhookDetails.value!.name,
+      function_source: functionSource,
+      respond_result: true,
+      options: {
+        httpMethod: getWebhookDetails.value!.options.httpMethod,
+        validationMethod: 'NO_VALIDATION'
+      }
+    });
+  });
+  useEffect(() => {
+    if (state !== 'publishing' || updateWebhook.status === 'idle') {
+      return;
+    } else if (updateWebhook.status !== 'pending') {
+      setState('default');
+      getWebhookDetails.reset();
+    }
+  }, [state, updateWebhook.status, getWebhookDetails]);
+
   const onPublishUpdates = () => {
-    if (!editing || !functionalityEditingState?.isValid || !functionalityEditingState?.descriptor) {
+    if (state !== 'editing' || !functionalityEditingState?.isValid || !functionalityEditingState?.descriptor) {
       return;
     }
-    console.log(RealmLambda.generateFunctionSource(functionalityEditingState.descriptor));
-    setEditing(false);
+    const functionSource = RealmLambda.generateFunctionSource(functionalityEditingState.descriptor);
+    setState('publishing');
+    updateWebhook.execute(functionSource);
   };
 
   const renderEndpointURL = () => {
@@ -83,11 +105,15 @@ export const RealmEndpointDetails: React.FC<RealmEndpointDetailsProps> = ({
       return (
         <Loader loading={true} />
       );
+    } else if (state === 'publishing') {
+      return (
+        <Loader loading={true} label="Publishing updated endpoint..." />
+      );
     } else {
       return (
         <EndpointDetailsFunctionality
           webhookDetails={getWebhookDetails.value}
-          editing={editing}
+          editing={state === 'editing'}
           onEditChange={setFunctionalityEditingState}
         />
       )
@@ -108,10 +134,10 @@ export const RealmEndpointDetails: React.FC<RealmEndpointDetailsProps> = ({
 
       <EndpointDetailsHeader
         webhookDetails={getWebhookDetails.value}
-        editing={editing}
+        state={state}
         mayPublish={functionalityEditingState?.isValid}
-        onEditWebhook={() => setEditing(true)}
-        onCancelEditing={() => setEditing(false)}
+        onEditWebhook={() => setState('editing')}
+        onCancelEditing={() => setState('default')}
         onPublishUpdates={onPublishUpdates}
       />
 
