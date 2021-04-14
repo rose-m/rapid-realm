@@ -27,17 +27,11 @@ export const RealmEndpointDetails: React.FC<RealmEndpointDetailsProps> = ({
   const { webhookId } = useParams() as { webhookId: string };
   const [state, setState] = useState<EndpointDetailsState>('default');
   const [showPublishError, setShowPublishError] = useState(false);
+  const [showDeleteError, setShowDeleteError] = useState(false);
   const [functionalityEditingState, setFunctionalityEditingState] = useState<EndpointDetailsFunctionalityEditingState | undefined>();
-
   const getWebhookDetails = useAsync(async () => {
     return await serviceApi.getWebhook(webhookId);
   });
-  useEffect(() => {
-    if (getWebhookDetails.status === 'idle') {
-      getWebhookDetails.execute();
-    }
-  }, [getWebhookDetails]);
-
   const updateWebhook = useAsync(async (functionSource: string) => {
     setShowPublishError(false);
     return await serviceApi.updateWebhook(webhookId, {
@@ -50,23 +44,56 @@ export const RealmEndpointDetails: React.FC<RealmEndpointDetailsProps> = ({
       }
     });
   });
+  const deleteWebhook = useAsync(async () => {
+    setShowDeleteError(false);
+    return await serviceApi.deleteWebhook(webhookId);
+  });
+
+  useEffect(() => {
+    if (getWebhookDetails.status === 'idle') {
+      getWebhookDetails.execute();
+    }
+  }, [getWebhookDetails]);
+
   useEffect(() => {
     if (state !== 'publishing' || updateWebhook.status === 'idle') {
       return;
     } else if (updateWebhook.status === 'success') {
       setState('default');
+      updateWebhook.reset();
       getWebhookDetails.reset();
     } else if (updateWebhook.status === 'error') {
       setState('editing');
       setShowPublishError(true);
     }
-  }, [state, updateWebhook.status, getWebhookDetails]);
+  }, [state, updateWebhook, getWebhookDetails]);
 
   useEffect(() => {
     if (state === 'default') {
       setShowPublishError(false);
     }
   }, [state]);
+
+  useEffect(() => {
+    switch (deleteWebhook.status) {
+      case 'error':
+        setShowDeleteError(true);
+        setState('default');
+        return;
+      case 'success':
+        setShowDeleteError(false);
+        onBackToOverview();
+        return;
+    }
+  }, [onBackToOverview, deleteWebhook.status]);
+
+  const onDeleteWebhook = () => {
+    if (state !== 'default') {
+      return;
+    }
+    setState('deleting');
+    deleteWebhook.execute();
+  }
 
   const onPublishUpdates = () => {
     if (state !== 'editing' || !functionalityEditingState?.isValid || !functionalityEditingState?.descriptor) {
@@ -116,6 +143,10 @@ export const RealmEndpointDetails: React.FC<RealmEndpointDetailsProps> = ({
       return (
         <Loader loading={true} />
       );
+    } else if (state === 'deleting') {
+      return (
+        <Loader loading={true} label="Deleting endpoint..." />
+      );
     } else {
       return (
         <EndpointDetailsFunctionality
@@ -144,26 +175,36 @@ export const RealmEndpointDetails: React.FC<RealmEndpointDetailsProps> = ({
         state={state}
         mayPublish={functionalityEditingState?.isValid}
         onEditWebhook={() => setState('editing')}
+        onDeleteWebhook={onDeleteWebhook}
         onCancelEditing={() => setState('default')}
         onPublishUpdates={onPublishUpdates}
       />
-
-      <Spacer size="xl" />
-
+      <Spacer />
       {renderEndpointURL()}
 
-      <Spacer size="xl" />
+      {showDeleteError && (
+        <>
+          <Spacer />
+          <Banner
+            variant="danger"
+          >
+            Failed to remove the endpoint. Please try again later.
+          </Banner>
+        </>
+      )}
 
       {showPublishError && (
         <>
+          <Spacer />
           <Banner
             variant="danger"
           >
             Publishing your endpoint details failed. Please try again later.
           </Banner>
-          <Spacer />
         </>
       )}
+
+      <Spacer size="xl" />
 
       {renderContent()}
     </Card>

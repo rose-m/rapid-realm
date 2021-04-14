@@ -1,2 +1,2 @@
 
-export type EndpointDetailsState = 'default' | 'editing' | 'publishing';
+export type EndpointDetailsState = 'default' | 'editing' | 'publishing' | 'deleting';

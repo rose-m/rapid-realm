@@ -26,6 +26,11 @@ export const EndpointDetailsHeader: React.FC<EndpointsDetailsHeaderProps> = ({
 }) => {
   const [showConfirmDeleteModal, setShowConfirmDeleteModal] = useState(false);
 
+  const onDelete = () => {
+    setShowConfirmDeleteModal(false);
+    onDeleteWebhook?.();
+  };
+
   const renderButtons = () => {
     if (!webhookDetails) {
       return null;
@@ -87,7 +92,7 @@ export const EndpointDetailsHeader: React.FC<EndpointsDetailsHeaderProps> = ({
       <ConfirmationModal
         open={showConfirmDeleteModal}
         onCancel={() => setShowConfirmDeleteModal(false)}
-        onConfirm={() => onDeleteWebhook?.()}
+        onConfirm={onDelete}
         variant="danger"
         title={`Really delete ${webhookDetails.name}?`}
         buttonText="Delete"
