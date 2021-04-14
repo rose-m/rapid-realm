@@ -6,7 +6,7 @@ import TextArea from '@leafygreen-ui/text-area';
 import TextInput from '@leafygreen-ui/text-input';
 import { Subtitle } from '@leafygreen-ui/typography';
 import { useEffect, useState } from 'react';
-import { FunctionDescriptor, FunctionVariable, RealmAppServiceWebhookDetails, RealmLambda } from '../../../services';
+import { FunctionDescriptor, FunctionType, FunctionVariable, QueryOrAggregationParseResult, RealmAppServiceWebhookDetails, RealmLambda } from '../../../services';
 import { Spacer } from '../../../typography';
 import { EndpointDetailsFunctionVariables } from './function-variables';
 import './functionality.less';
@@ -33,8 +33,10 @@ export const EndpointDetailsFunctionality: React.FC<EndpointDetailsFunctionality
   }, [webhookDetails.function_source]);
 
   const [editState, setEditState] = useState({
+    type: 'query' as FunctionType,
     database: '',
     collection: '',
+    parseError: '',
     lastParsedQueryOrAggregation: '',
     queryOrAggregation: '',
     variables: [] as FunctionVariable[]
@@ -42,8 +44,10 @@ export const EndpointDetailsFunctionality: React.FC<EndpointDetailsFunctionality
   useEffect(() => {
     if (editing) {
       setEditState({
+        type: functionDescriptor?.type ?? 'query',
         database: functionDescriptor?.database ?? '',
         collection: functionDescriptor?.collection ?? '',
+        parseError: '',
         lastParsedQueryOrAggregation: functionDescriptor?.queryOrAggregation ?? '',
         queryOrAggregation: functionDescriptor?.queryOrAggregation ?? '',
         variables: functionDescriptor?.variables.map(v => ({ ...v })) ?? []
@@ -77,14 +81,32 @@ export const EndpointDetailsFunctionality: React.FC<EndpointDetailsFunctionality
   const onUpdateSource = (source: string) => {
     setEditState({
       ...editState,
+      parseError: '',
       queryOrAggregation: source
     });
   };
   const onParseQueryOrAggregation = () => {
-    setEditState({
-      ...editState,
-      lastParsedQueryOrAggregation: editState.queryOrAggregation
-    });
+    let result: QueryOrAggregationParseResult | undefined;
+    let error: string | undefined;
+    try {
+      result = RealmLambda.parseQueryOrAggregation(editState.queryOrAggregation);
+    } catch (e) {
+      error = e.message;
+    }
+
+    if (result) {
+      setEditState({
+        ...editState,
+        type: result.type,
+        variables: mergeVariables(editState.variables, result.variables),
+        lastParsedQueryOrAggregation: editState.queryOrAggregation
+      });
+    } else {
+      setEditState({
+        ...editState,
+        parseError: error ?? 'Could not parse your input.'
+      });
+    }
   };
   const onUpdateVariables = (variables: FunctionVariable[]) => {
     setEditState({
@@ -111,7 +133,16 @@ export const EndpointDetailsFunctionality: React.FC<EndpointDetailsFunctionality
           value={editState.queryOrAggregation}
           className="endpoint-details-functionality__source"
           onChange={e => onUpdateSource(e.target.value)}
+          state={editState.parseError ? 'error' : 'none'}
         />
+        {editState.parseError && (
+          <>
+            <Spacer />
+            <Banner
+              variant="danger"
+            >{editState.parseError}</Banner>
+          </>
+        )}
         {editState.queryOrAggregation !== editState.lastParsedQueryOrAggregation && (
           <>
             <Spacer />
@@ -184,3 +215,18 @@ export const EndpointDetailsFunctionality: React.FC<EndpointDetailsFunctionality
     </Banner>
   );
 };
+
+function mergeVariables(knownVariables: FunctionVariable[], newVariables: FunctionVariable[]): FunctionVariable[] {
+  const knownVariableNames: Record<string, FunctionVariable> = {};
+  knownVariables.forEach(v => knownVariableNames[v.name] = v);
+
+  const result: FunctionVariable[] = [];
+  newVariables.forEach(v => {
+    if (knownVariableNames[v.name]) {
+      result.push(knownVariableNames[v.name]);
+    } else {
+      result.push(v);
+    }
+  });
+  return result;
+}
