@@ -13,6 +13,9 @@ export function useRealm() {
 
 export const ProvideRealm = withRouter(({ children, history, location }) => {
   const realm = useProvideRealm();
+  const [tokenRefreshInterval, setTokenRefreshInterval] = useState<number | null>(null);
+  const [loggingIn, setLoggingIn] = useState(false);
+
   useEffect(() => {
     if (!realm.realmServiceData && location.pathname !== '/configure') {
       history.push('/configure');
@@ -22,7 +25,20 @@ export const ProvideRealm = withRouter(({ children, history, location }) => {
   }, [realm.realmServiceData, history, location.pathname]);
 
   useEffect(() => {
+    if (realm.serviceApi && !tokenRefreshInterval) {
+      const refresher = realm.serviceApi.getApp().getRealm().startTokenRefresh();
+      setTokenRefreshInterval(refresher);
+    }
+    return () => {
+      if (tokenRefreshInterval) {
+        clearInterval(tokenRefreshInterval);
+      }
+    };
+  }, [tokenRefreshInterval, realm.serviceApi]);
+
+  useEffect(() => {
     const loginAndGetServiceApi = async (serviceData: RealmServiceData) => {
+      setLoggingIn(true);
       try {
         const realmApi = await RealmApi.login(serviceData.publicKey, serviceData.privateKey);
         const realmApp = realmApi.getAppApi(await realmApi.getApp(serviceData.groupId, serviceData.appId));
@@ -31,13 +47,15 @@ export const ProvideRealm = withRouter(({ children, history, location }) => {
       } catch (e) {
         console.error('Failed to login and get service API', e);
         realm.clear();
+      } finally {
+        setLoggingIn(false);
       }
     };
 
-    if (realm.realmServiceData && !realm.serviceApi) {
+    if (!loggingIn && realm.realmServiceData && !realm.serviceApi) {
       loginAndGetServiceApi(realm.realmServiceData);
     }
-  }, [realm, realm.realmServiceData, realm.serviceApi]);
+  }, [realm, loggingIn]);
 
   return (
     <realmContext.Provider value={realm}>

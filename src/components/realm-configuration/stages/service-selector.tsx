@@ -3,7 +3,7 @@ import Button from '@leafygreen-ui/button';
 import { RadioBox, RadioBoxGroup } from '@leafygreen-ui/radio-box-group';
 import { Label } from '@leafygreen-ui/typography';
 import { useEffect, useState } from 'react';
-import { RealmAppApi, RealmAppServiceDetails } from '../../../services/atlas-api';
+import { RealmAppApi, RealmAppServiceDetails, RealmServiceType } from '../../../services/atlas-api';
 import { ButtonBar, Loader, Spacer } from '../../../typography';
 import { useAsync } from '../../../utils';
 
@@ -36,7 +36,7 @@ export const RealmServiceSelector: React.FC<RealmServiceSelectorProps> = ({
     }
   }, [getRealmServices]);
   useEffect(() => {
-    setHttpServices(getRealmServices.value?.filter(d => d.type === 'http') ?? []);
+    setHttpServices(getRealmServices.value?.filter(d => d.type === RealmServiceType.Http) ?? []);
   }, [getRealmServices.value])
 
   const onSelectServiceById = (serviceId: string) => {

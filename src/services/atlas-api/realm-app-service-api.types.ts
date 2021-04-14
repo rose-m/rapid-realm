@@ -1,8 +1,12 @@
 
+export enum RealmServiceType {
+  MongoDbAtlas = 'mongodb-atlas',
+  Http = 'http'
+}
 export interface RealmAppServiceDetails {
   _id: string;
   name: string;
-  type: 'mongodb-atlas' | 'http';
+  type: RealmServiceType;
   version: number;
 }
 
