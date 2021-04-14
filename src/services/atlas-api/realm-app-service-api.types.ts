@@ -18,7 +18,7 @@ export interface RealmAppServiceWebhookDetails extends RealmAppServiceWebhookBas
   fetch_custom_user_data: boolean;
   function_source: string;
   options: {
-    httpMethod: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
+    httpMethod: 'ANY' | 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
     validationMethod: 'NO_VALIDATION';
   };
   respond_result: boolean;
@@ -28,4 +28,4 @@ export interface RealmAppServiceWebhookDetails extends RealmAppServiceWebhookBas
   $url?: string;
 }
 
-export type RealmAppServiceUpdateWebhookPayload = Pick<RealmAppServiceWebhookDetails, 'name' | 'function_source' | 'respond_result' | 'options'>;
+export type RealmAppServiceWebhookPayload = Pick<RealmAppServiceWebhookDetails, 'name' | 'function_source' | 'respond_result' | 'options'>;

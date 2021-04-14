@@ -6,9 +6,9 @@ import { Body, H2 } from '@leafygreen-ui/typography';
 import { Redirect, Route, Switch, useHistory, useRouteMatch } from 'react-router';
 import { useRealm } from '../../context/realm';
 import { Loader, Spacer } from '../../typography';
-import { RealmEndpointsOverview } from './endpoints-overview';
-import { RealmEndpointDetails } from './endpoint-details/endpoint-details';
 import './app-manager.less';
+import { RealmEndpointDetails } from './endpoint-details/endpoint-details';
+import { RealmEndpointsOverview } from './endpoints-overview';
 
 export const RealmAppManager: React.FC = () => {
   const { path } = useRouteMatch();
@@ -27,6 +27,9 @@ export const RealmAppManager: React.FC = () => {
     );
   }
 
+  const onAddedEndpoint = (webhookId: string) => {
+    history.push(`${path}/endpoints/${webhookId}`);
+  };
   const onEditEndpoint = (webhookId: string) => {
     history.push(`${path}/endpoints/${webhookId}`);
   };
@@ -69,6 +72,7 @@ export const RealmAppManager: React.FC = () => {
         <Route path={`${path}/endpoints`}>
           <RealmEndpointsOverview
             serviceApi={realm.serviceApi}
+            onAddedEndpoint={onAddedEndpoint}
             onEditEndpoint={onEditEndpoint}
           />
         </Route>

@@ -2,22 +2,40 @@
 
 .loader {
   display: flex;
-  flex-direction: column;
   align-items: center;
 
+  &--block {
+    flex-direction: column;
+
+    --loader-width: 3px;
+    --loader-margin-right: 0px;
+    --loader-margin-bottom: 0.5em;
+    --loader-size: 36px;
+  }
+
+  &--inline {
+    flex-direction: row;
+
+    --loader-width: 2px;
+    --loader-margin-right: 0.5em;
+    --loader-margin-bottom: 0;
+    --loader-size: 16px;
+  }
+
   &__icon {
-    border: 3px solid transparent;
-    border-top: 3px solid @leafygreen__green--base;
+    border: var(--loader-width) solid transparent;
+    border-top: var(--loader-width) solid @leafygreen__green--base;
     border-radius: 50%;
     padding: 0;
     margin: 0;
-    margin-bottom: 0.5em;
     box-sizing: border-box;
-    width: 36px;
-    height: 36px;
     background: none;
     outline: none;
-    margin-right: 5px;
+
+    margin-right: var(--loader-margin-right);
+    margin-bottom: var(--loader-margin-bottom);
+    width: var(--loader-size);
+    height: var(--loader-size);
 
     animation: loader-spin 700ms linear infinite;
   }
