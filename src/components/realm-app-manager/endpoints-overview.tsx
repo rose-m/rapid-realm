@@ -8,8 +8,9 @@ import TextInput from '@leafygreen-ui/text-input';
 import { H3 } from '@leafygreen-ui/typography';
 import { useEffect, useState } from 'react';
 import { RealmAppServiceApi, RealmAppServiceWebhookBasics, RealmLambda } from '../../services';
-import { ButtonBar, Loader, Spacer } from '../../typography';
+import { Loader, Spacer } from '../../typography';
 import { useAsync } from '../../utils';
+import './endpoints-overview.less';
 
 export interface RealmEndpointsOverviewProps {
   serviceApi: RealmAppServiceApi;
@@ -110,26 +111,6 @@ export const RealmEndpointsOverview: React.FC<RealmEndpointsOverviewProps> = ({
     ) : renderEndpointsTable();
     return (
       <>
-        <ButtonBar>
-          <Button
-            variant="primary"
-            size="small"
-            leftGlyph={addEndpoint.status !== 'pending' ? <Icon glyph="Plus" /> : null}
-            onClick={() => setShowAddEndpointModal(true)}
-            disabled={addEndpoint.status === 'pending'}
-          >
-            {addEndpoint.status === 'pending' ? (
-              <Loader
-                loading={true}
-                variant="inline"
-                label="Adding Endpoint..."
-              />
-            ) : (
-              <>Add Endpoint</>
-            )}
-          </Button>
-        </ButtonBar>
-        <Spacer size="l" />
         {addEndpoint.error && (<>
           <Banner
             variant="danger"
@@ -207,10 +188,30 @@ export const RealmEndpointsOverview: React.FC<RealmEndpointsOverviewProps> = ({
 
   return (
     <Card className="padding--md">
-      <H3>
-        <Icon glyph="Apps" size="large" /> Endpoints
-      </H3>
-      <Spacer />
+      <div className="endpoints-overview__header">
+        <Icon glyph="Apps" size="large" />
+        <Spacer direction="horizontal" size="s" />
+        <H3>Endpoints</H3>
+        <Spacer direction="flex" />
+        <Button
+          variant="primary"
+          size="small"
+          leftGlyph={addEndpoint.status !== 'pending' ? <Icon glyph="Plus" /> : null}
+          onClick={() => setShowAddEndpointModal(true)}
+          disabled={addEndpoint.status === 'pending'}
+        >
+          {addEndpoint.status === 'pending' ? (
+            <Loader
+              loading={true}
+              variant="inline"
+              label="Adding Endpoint..."
+            />
+          ) : (
+            <>Add Endpoint</>
+          )}
+        </Button>
+      </div>
+      <Spacer size="l" />
       {renderContent()}
       {renderAddEndpointModal()}
     </Card>

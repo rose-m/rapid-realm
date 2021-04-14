@@ -6,7 +6,7 @@ import { ProvideRealm } from './context';
 
 function App() {
   return (
-    <div style={{ background: '' }}>
+    <div style={{ maxWidth: '900px', margin: '0 auto' }}>
       <Router>
         <ProvideRealm>
           <Route>

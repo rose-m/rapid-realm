@@ -1,5 +1,6 @@
 import Banner from '@leafygreen-ui/banner';
 import Button from '@leafygreen-ui/button';
+import Code from '@leafygreen-ui/code';
 import Icon from '@leafygreen-ui/icon';
 import { Option, Select } from '@leafygreen-ui/select';
 import TextArea from '@leafygreen-ui/text-area';
@@ -187,7 +188,13 @@ export const EndpointDetailsFunctionality: React.FC<EndpointDetailsFunctionality
   };
 
   const renderCode = () => {
-    return (
+    return state === 'default' ? (
+      <Code
+        language="javascript"
+      >
+        {functionDescriptor?.queryOrAggregation ?? ''}
+      </Code>
+    ) : (
       <>
         <TextArea
           label="Edit Query / Aggregation"
