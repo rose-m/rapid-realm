@@ -6,7 +6,7 @@ const WRAPPER_VARIABLE = '__PARSE_WRAPPER__';
 
 export function parseQueryOrAggregation(queryOrAggregation: string): QueryOrAggregationParseResult | undefined {
   let ast = acorn.parse(`const ${WRAPPER_VARIABLE} = ${queryOrAggregation};`, {
-    ecmaVersion: 2017
+    ecmaVersion: 'latest'
   });
 
   let type: FunctionType | undefined;
@@ -31,11 +31,13 @@ export function parseQueryOrAggregation(queryOrAggregation: string): QueryOrAggr
         return;
       }
 
-      variables.push({
-        name: node.name,
-        type: 'any',
-        default: undefined
-      });
+      if (!variables.find(v => v.name === node.name)) {
+        variables.push({
+          name: node.name,
+          type: 'any',
+          default: undefined
+        });
+      }
     }
   });
 

@@ -33,13 +33,24 @@ describe('Query Parser', () => {
     });
     it('handles queries with variables', () => {
       const result = parseQueryOrAggregation(
-        `{ name: nameVar, count: { $gt: num } }`
+        `{ name: nameVar, count: { $gt: num }, next: num }`
       );
       expect(result).toEqual({
         type: 'query',
         variables: [
           { name: 'nameVar', type: 'any', default: undefined },
           { name: 'num', type: 'any', default: undefined }
+        ]
+      });
+    });
+    it('handles complex queries with spread', () => {
+      const result = parseQueryOrAggregation(
+        `{ name: nameVar, ...{ count: 25 } }`
+      );
+      expect(result).toEqual({
+        type: 'query',
+        variables: [
+          { name: 'nameVar', type: 'any', default: undefined }
         ]
       });
     });
